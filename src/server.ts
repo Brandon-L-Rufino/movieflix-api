@@ -28,6 +28,23 @@ app.post("/movies", async (req, res) => {
 
     try{
 
+        // VERIFICAR NO BANCO SE JÁ EXISTE UM FILME COM O NOME QUE ESTÁ SENDO ENVIADO 
+
+        // CASE INSENSITIVE - se a busca for feita por john wick ou JOHN WICK, o reg vai ser retornado na consulta
+
+        // CASE SENSITIVE - se a busca por john wick e no banco estiver como John Wick, não vai ser retornado na consulta
+
+        const movieWithSameTitle = await prisma.movie.findFirst({
+            where: { 
+                title: { equals: title, mode: "insensitive" }
+            }, 
+        });
+        if (movieWithSameTitle) {
+            return res
+                .status(409) // ERRO JA POSSUI REG
+                .send({ message: "Já existe um filme com esse título" });
+        }
+
         await prisma.movie.create({
             data: {
                 title: title,
